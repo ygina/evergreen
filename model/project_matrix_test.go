@@ -605,7 +605,7 @@ func TestRulesEvaluation(t *testing.T) {
 					{AddTasks: []parserBVTask{{Name: ".primary"}}},
 					{AddTasks: []parserBVTask{{Name: ".warm"}}},
 					{AddTasks: []parserBVTask{{Name: "green", DependsOn: []parserDependency{{
-						TaskSelector: TaskSelector{Name: ".warm"},
+						taskSelector: taskSelector{Name: ".warm"},
 					}}}}},
 				},
 			}}
@@ -627,7 +627,7 @@ func TestRulesEvaluation(t *testing.T) {
 					{AddTasks: []parserBVTask{{Name: ".warm"}}},
 					{RemoveTasks: []string{"orange"}},
 					{AddTasks: []parserBVTask{{Name: "orange", DependsOn: []parserDependency{{
-						TaskSelector: TaskSelector{Name: ".warm"},
+						taskSelector: taskSelector{Name: ".warm"},
 					}}}}},
 				},
 			}}
@@ -646,7 +646,7 @@ func TestRulesEvaluation(t *testing.T) {
 				},
 				matrixRules: []ruleAction{
 					{AddTasks: []parserBVTask{{Name: "orange", DependsOn: []parserDependency{{
-						TaskSelector: TaskSelector{Name: ".warm"},
+						taskSelector: taskSelector{Name: ".warm"},
 					}}}}},
 				},
 			}, {
@@ -655,7 +655,7 @@ func TestRulesEvaluation(t *testing.T) {
 				Tasks: parserBVTasks{},
 				matrixRules: []ruleAction{
 					{AddTasks: []parserBVTask{{Name: ".warm"}, {Name: "orange", DependsOn: []parserDependency{{
-						TaskSelector: TaskSelector{Name: ".warm"},
+						taskSelector: taskSelector{Name: ".warm"},
 					}}}}},
 				},
 			}}

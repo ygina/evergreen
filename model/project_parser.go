@@ -71,7 +71,7 @@ type parserTask struct {
 	ExecTimeoutSecs int                 `yaml:"exec_timeout_secs"`
 	DisableCleanup  bool                `yaml:"disable_cleanup"`
 	DependsOn       parserDependencies  `yaml:"depends_on"`
-	Requires        TaskSelectors       `yaml:"requires"`
+	Requires        taskSelectors       `yaml:"requires"`
 	Commands        []PluginCommandConf `yaml:"commands"`
 	Tags            parserStringSlice   `yaml:"tags"`
 	Patchable       *bool               `yaml:"patchable"`
@@ -84,7 +84,7 @@ func (pt *parserTask) tags() []string { return pt.Tags }
 
 // parserDependency represents the intermediary state for referencing dependencies.
 type parserDependency struct {
-	TaskSelector
+	taskSelector
 	Status        string `yaml:"status"`
 	PatchOptional bool   `yaml:"patch_optional"`
 }
@@ -113,7 +113,7 @@ func (pds *parserDependencies) UnmarshalYAML(unmarshal func(interface{}) error) 
 // UnmarshalYAML reads YAML into a parserDependency. A single selector string
 // will be also be accepted.
 func (pd *parserDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	if err := unmarshal(&pd.TaskSelector); err != nil {
+	if err := unmarshal(&pd.taskSelector); err != nil {
 		return err
 	}
 	otherFields := struct {
@@ -129,13 +129,13 @@ func (pd *parserDependency) UnmarshalYAML(unmarshal func(interface{}) error) err
 
 // TaskSelector handles the selection of specific task/variant combinations
 // in the context of dependencies and requirements fields. //TODO no export?
-type TaskSelector struct {
+type taskSelector struct {
 	Name    string           `yaml:"name"`
 	Variant *variantSelector `yaml:"variant"`
 }
 
 // TaskSelectors is a helper type for parsing arrays of TaskSelector.
-type TaskSelectors []TaskSelector
+type taskSelectors []taskSelector
 
 // VariantSelector handles the selection
 type variantSelector struct {
@@ -169,25 +169,25 @@ func (vs *variantSelector) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 // UnmarshalYAML reads YAML into an array of TaskSelector. It will
 // successfully unmarshal arrays of dependency selectors or a single selector.
-func (tss *TaskSelectors) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (tss *taskSelectors) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// first, attempt to unmarshal a single selector
-	var single TaskSelector
+	var single taskSelector
 	if err := unmarshal(&single); err == nil {
-		*tss = TaskSelectors([]TaskSelector{single})
+		*tss = taskSelectors([]taskSelector{single})
 		return nil
 	}
-	var slice []TaskSelector
+	var slice []taskSelector
 	if err := unmarshal(&slice); err != nil {
 		return err
 	}
-	*tss = TaskSelectors(slice)
+	*tss = taskSelectors(slice)
 	return nil
 }
 
 // UnmarshalYAML allows tasks to be referenced as single selector strings.
 // This works by first attempting to unmarshal the YAML into a string
 // and then falling back to the TaskSelector struct.
-func (ts *TaskSelector) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (ts *taskSelector) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// first, attempt to unmarshal just a selector string
 	var onlySelector string
 	if err := unmarshal(&onlySelector); err == nil {
@@ -198,7 +198,7 @@ func (ts *TaskSelector) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	// we define a new type so that we can grab the yaml struct tags without the struct methods,
 	// preventing infinite recursion on the UnmarshalYAML() method.
-	type copyType TaskSelector
+	type copyType taskSelector
 	var tsc copyType
 	if err := unmarshal(&tsc); err != nil {
 		return err
@@ -206,7 +206,7 @@ func (ts *TaskSelector) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if tsc.Name == "" {
 		return fmt.Errorf("task selector must have a name")
 	}
-	*ts = TaskSelector(tsc)
+	*ts = taskSelector(tsc)
 	return nil
 }
 
@@ -264,7 +264,7 @@ type parserBVTask struct {
 	Patchable       *bool              `yaml:"patchable"`
 	Priority        int64              `yaml:"priority"`
 	DependsOn       parserDependencies `yaml:"depends_on"`
-	Requires        TaskSelectors      `yaml:"requires"`
+	Requires        taskSelectors      `yaml:"requires"`
 	ExecTimeoutSecs int                `yaml:"exec_timeout_secs"`
 	Stepback        *bool              `yaml:"stepback"`
 	Distros         parserStringSlice  `yaml:"distros"`
@@ -648,7 +648,7 @@ func evaluateDependsOn(tse *taskSelectorEvaluator, vse *variantSelectorEvaluator
 
 // evaluateRequires expands any selectors in a requirement definition.
 func evaluateRequires(tse *taskSelectorEvaluator, vse *variantSelectorEvaluator,
-	reqs []TaskSelector) ([]TaskRequirement, []error) {
+	reqs []taskSelector) ([]TaskRequirement, []error) {
 	var evalErrs []error
 	newReqs := []TaskRequirement{}
 	newReqsByNameAndVariant := map[TVPair]struct{}{}

@@ -479,14 +479,14 @@ func expandParserBVTask(pbvt parserBVTask, exp command.Expansions) (parserBVTask
 		if err != nil {
 			return parserBVTask{}, fmt.Errorf("expanding depends_on[%v].status: %v", i, err)
 		}
-		newDep.TaskSelector, err = expandTaskSelector(d.TaskSelector, exp)
+		newDep.taskSelector, err = expandTaskSelector(d.taskSelector, exp)
 		if err != nil {
 			return parserBVTask{}, fmt.Errorf("expanding depends_on[%v]: %v", i, err)
 		}
 		newDeps = append(newDeps, newDep)
 	}
 	newTask.DependsOn = newDeps
-	var newReqs TaskSelectors
+	var newReqs taskSelectors
 	for i, r := range pbvt.Requires {
 		newReq, err := expandTaskSelector(r, exp)
 		if err != nil {
@@ -499,8 +499,8 @@ func expandParserBVTask(pbvt parserBVTask, exp command.Expansions) (parserBVTask
 }
 
 // helper for expanding task selectors
-func expandTaskSelector(ts TaskSelector, exp command.Expansions) (TaskSelector, error) {
-	newTS := TaskSelector{}
+func expandTaskSelector(ts taskSelector, exp command.Expansions) (taskSelector, error) {
+	newTS := taskSelector{}
 	newName, err := exp.ExpandString(ts.Name)
 	if err != nil {
 		return newTS, fmt.Errorf("expanding name: %v", err)
