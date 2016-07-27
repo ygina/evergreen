@@ -1128,6 +1128,90 @@ func TestRulesEvaluation(t *testing.T) {
 			So(v1.Name, ShouldEqual, "test")
 			So(len(v1.Tasks), ShouldEqual, 2)
 		})
-		// TODO add_task, crazy combooo
+		Convey("a variant with an 'add' rule should add the given tasks", func() {
+			bvs := []parserBV{{
+				Name: "test",
+				Tasks: parserBVTasks{
+					{Name: ".special"},
+				},
+				matrixRules: []ruleAction{
+					{AddTasks: []parserBVTask{{Name: ".primary"}}},
+					{AddTasks: []parserBVTask{{Name: ".warm"}}},
+					{AddTasks: []parserBVTask{{Name: "green", DependsOn: []parserDependency{{
+						TaskSelector: TaskSelector{Name: ".warm"},
+					}}}}},
+				},
+			}}
+			evaluated, errs := evaluateBuildVariants(tse, nil, bvs)
+			So(errs, ShouldBeNil)
+			v1 := evaluated[0]
+			So(v1.Name, ShouldEqual, "test")
+			So(len(v1.Tasks), ShouldEqual, 7)
+		})
+		Convey("a series of add and remove rules should execute in order", func() {
+			bvs := []parserBV{{
+				Name: "test",
+				Tasks: parserBVTasks{
+					{Name: ".secondary"},
+				},
+				matrixRules: []ruleAction{
+					{AddTasks: []parserBVTask{{Name: ".primary"}}},
+					{RemoveTasks: []string{".secondary"}},
+					{AddTasks: []parserBVTask{{Name: ".warm"}}},
+					{RemoveTasks: []string{"orange"}},
+					{AddTasks: []parserBVTask{{Name: "orange", DependsOn: []parserDependency{{
+						TaskSelector: TaskSelector{Name: ".warm"},
+					}}}}},
+				},
+			}}
+			evaluated, errs := evaluateBuildVariants(tse, nil, bvs)
+			So(errs, ShouldBeNil)
+			v1 := evaluated[0]
+			So(v1.Name, ShouldEqual, "test")
+			So(len(v1.Tasks), ShouldEqual, 4)
+		})
+		Convey("conflicting added tasks should fail", func() {
+			bvs := []parserBV{{
+				// case where conflicts take place against existing tasks
+				Name: "test1",
+				Tasks: parserBVTasks{
+					{Name: ".warm"},
+				},
+				matrixRules: []ruleAction{
+					{AddTasks: []parserBVTask{{Name: "orange", DependsOn: []parserDependency{{
+						TaskSelector: TaskSelector{Name: ".warm"},
+					}}}}},
+				},
+			}, {
+				// case where conflicts are within the same rule
+				Name:  "test2",
+				Tasks: parserBVTasks{},
+				matrixRules: []ruleAction{
+					{AddTasks: []parserBVTask{{Name: ".warm"}, {Name: "orange", DependsOn: []parserDependency{{
+						TaskSelector: TaskSelector{Name: ".warm"},
+					}}}}},
+				},
+			}}
+			_, errs := evaluateBuildVariants(tse, nil, bvs)
+			So(errs, ShouldNotBeNil)
+			So(len(errs), ShouldEqual, 2)
+		})
+		Convey("a 'remove' rule for an unknown task should fail", func() {
+			bvs := []parserBV{{
+				Name: "test",
+				Tasks: parserBVTasks{
+					{Name: "blue"},
+					{Name: ".special"},
+					{Name: ".tertiary"},
+				},
+				matrixRules: []ruleAction{
+					{RemoveTasks: []string{".amazing"}}, //remove blue
+					{RemoveTasks: []string{"rainbow"}},
+				},
+			}}
+			_, errs := evaluateBuildVariants(tse, nil, bvs)
+			So(errs, ShouldNotBeNil)
+			So(len(errs), ShouldEqual, 2)
+		})
 	})
 }

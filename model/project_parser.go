@@ -655,8 +655,26 @@ func evaluateBuildVariants(tse *taskSelectorEvaluator, vse *variantSelectorEvalu
 			}
 			// add_tasks adds the given BuildVariantTasks, returning errors for any collisions
 			if len(r.AddTasks) > 0 {
-				bv.Tasks, errs = evaluateBVTasks(tse, vse, append(pbv.Tasks, r.AddTasks...))
+				// cache existing tasks so we can check for duplicates
+				existing := map[string]*BuildVariantTask{}
+				for i, t := range bv.Tasks {
+					existing[t.Name] = &bv.Tasks[i]
+				}
+
+				added, errs := evaluateBVTasks(tse, vse, r.AddTasks)
 				evalErrs = append(evalErrs, errs...)
+				// check for conflicting duplicates
+				for _, t := range added {
+					if old, ok := existing[t.Name]; ok {
+						if !reflect.DeepEqual(t, *old) {
+							evalErrs = append(evalErrs, fmt.Errorf(
+								"conflicting definitions of added tasks '%v': %v != %v", t.Name, t, old))
+						}
+					} else {
+						bv.Tasks = append(bv.Tasks, t)
+						existing[t.Name] = &t
+					}
+				}
 			}
 		}
 		evalErrs = append(evalErrs, errs...)
