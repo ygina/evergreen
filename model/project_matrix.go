@@ -9,6 +9,24 @@ import (
 	"github.com/evergreen-ci/evergreen/util"
 )
 
+// This file contains the code for matrix generation.
+// Project matrices are a shortcut for defining many variants
+// by combining multiple axes. A full explanation of the matrix format
+// is available at #TODO github wiki documentation.
+//
+// On a high level, matrix variant construction takes the following steps:
+//   1. Matrix definitions are read as part of a project's `buildvariants` field
+//  and separated into a separate slice.
+//   2. An tag selector evaluator is constructed for evaluating axis selectors
+//   3. The matrix and axis definitions are passed to buildMatrixVariants, which
+//  all combination of matrix cells and removes excluded ones.
+//   4. During the generation of a single cell, we merge all axis values for the cell
+//  together to create a fully filled-in variant. Matrix rules concerning non-task settings
+//  are evaluated as well. Rules `add_tasks` and `remove_tasks` are stored in the variant
+//  for later evaluation.
+//   5. Created variants are appended back to the project's list of buildvariants.
+//   6. During evaluateBuildVariants in project_parser.go, rules are executed.
+
 // matrix defines a set of variants programmatically by
 // combining a series of axis values and rules.
 type matrix struct {
@@ -375,7 +393,7 @@ type matrixRule struct {
 }
 
 // ruleAction is used to define what work must be done when
-// matrixRule.If is satisfied.
+// "matrixRule.If" is satisfied.
 type ruleAction struct {
 	Set         *axisValue    `yaml:"set"`
 	RemoveTasks []string      `yaml:"remove_tasks"`
@@ -456,7 +474,7 @@ func expandExpansions(in, exp command.Expansions) (command.Expansions, error) {
 	return newExp, nil
 }
 
-// helper for expanding expansion parserBVTs
+// helper for expanding strings inside parserBVTs
 func expandParserBVTask(pbvt parserBVTask, exp command.Expansions) (parserBVTask, error) {
 	var err error
 	newTask := pbvt
@@ -498,7 +516,7 @@ func expandParserBVTask(pbvt parserBVTask, exp command.Expansions) (parserBVTask
 	return newTask, nil
 }
 
-// helper for expanding task selectors
+// helper for expanding strings inside task selectors
 func expandTaskSelector(ts taskSelector, exp command.Expansions) (taskSelector, error) {
 	newTS := taskSelector{}
 	newName, err := exp.ExpandString(ts.Name)

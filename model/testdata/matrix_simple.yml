@@ -62,6 +62,7 @@ buildvariants:
       set:
         tags: "gotcha_boy"
         stepback: false
+      add_tasks: ".special"
 
 tasks:
 - name: "test_task"
@@ -70,4 +71,6 @@ tasks:
 - name: test_0
 - name: test_125
 - name: "1"
+- name: add_me
+  tags: special
 
