@@ -401,9 +401,9 @@ type matrixRule struct {
 // ruleAction is used to define what work must be done when
 // "matrixRule.If" is satisfied.
 type ruleAction struct {
-	Set         *axisValue    `yaml:"set"`
-	RemoveTasks []string      `yaml:"remove_tasks"`
-	AddTasks    parserBVTasks `yaml:"add_tasks"`
+	Set         *axisValue        `yaml:"set"`
+	RemoveTasks parserStringSlice `yaml:"remove_tasks"`
+	AddTasks    parserBVTasks     `yaml:"add_tasks"`
 }
 
 // mergeAxisValue overwrites a parserBV's fields based on settings

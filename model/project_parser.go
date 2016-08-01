@@ -240,7 +240,8 @@ func (pbv *parserBV) tags() []string { return pbv.Tags }
 func (pbv *parserBV) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// first attempt to unmarshal into a matrix
 	m := matrix{}
-	if err := unmarshal(&m); err == nil {
+	merr := unmarshal(&m)
+	if merr == nil {
 		if m.Id != "" {
 			*pbv = parserBV{matrix: &m}
 			return nil
@@ -253,7 +254,12 @@ func (pbv *parserBV) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 	if bv.Name == "" {
-		return fmt.Errorf("buildvariant must have a name")
+		// if we're here, it's very likely that the user was building a matrix but broke
+		// the syntax, so we try and surface the matrix error if they used "matrix_name".
+		if m.Id != "" {
+			return fmt.Errorf("parsing matrix: %v", merr)
+		}
+		return fmt.Errorf("buildvariant missing name")
 	}
 	*pbv = parserBV(bv)
 	return nil
