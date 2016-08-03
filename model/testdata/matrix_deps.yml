@@ -29,11 +29,14 @@ axes:
 
 
 buildvariants:
+# standalone matrix for doing work before and after all other tasks
 - name: analysis
   run_on: "linux"
+  stepback: false
   tasks:
   - pre-task
   - post-task
+
 - matrix_name: test
   matrix_spec:
       os: "*"
