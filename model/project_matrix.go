@@ -565,7 +565,7 @@ func expandMatrixDefinition(md matrixDefinition, exp command.Expansions) (matrix
 
 // helper for expanding rules
 func expandRule(r matrixRule, exp command.Expansions) (matrixRule, error) {
-	newR := r
+	newR := matrixRule{}
 	for _, md := range r.If {
 		newIf, err := expandMatrixDefinition(md, exp)
 		if err != nil {
