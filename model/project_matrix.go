@@ -365,7 +365,11 @@ func buildMatrixVariant(axes []matrixAxis, mv matrixValue, m *matrix, ase *axisS
 	}
 
 	// evaluate rules for matching matrix values
-	for i, r := range m.Rules {
+	for i, rule := range m.Rules {
+		r, err := expandRule(rule, v.Expansions)
+		if err != nil {
+			return nil, fmt.Errorf("processing rule[%v]: %v", i, err)
+		}
 		matchers, errs := r.If.evaluatedCopies(ase) // we could cache this
 		if len(errs) > 0 {
 			return nil, fmt.Errorf("evaluating rules for matrix %v: %v", m.Id, errs)
@@ -526,12 +530,9 @@ func expandTaskSelector(ts taskSelector, exp command.Expansions) (taskSelector, 
 	newTS.Name = newName
 	if v := ts.Variant; v != nil {
 		if len(v.matrixSelector) > 0 {
-			newMS := matrixDefinition{}
-			for axis, vals := range v.matrixSelector {
-				newMS[axis], err = expandStrings(vals, exp)
-				if err != nil {
-					return newTS, fmt.Errorf("expanding variant: %v", err)
-				}
+			newMS, err := expandMatrixDefinition(v.matrixSelector, exp)
+			if err != nil {
+				return newTS, fmt.Errorf("expanding variant: %v", err)
 			}
 			newTS.Variant = &variantSelector{
 				matrixSelector: newMS,
@@ -547,4 +548,46 @@ func expandTaskSelector(ts taskSelector, exp command.Expansions) (taskSelector, 
 		}
 	}
 	return newTS, nil
+}
+
+// helper for expanding matrix definitions
+func expandMatrixDefinition(md matrixDefinition, exp command.Expansions) (matrixDefinition, error) {
+	var err error
+	newMS := matrixDefinition{}
+	for axis, vals := range md {
+		newMS[axis], err = expandStrings(vals, exp)
+		if err != nil {
+			return nil, fmt.Errorf("matrix selector: %v", err)
+		}
+	}
+	return newMS, nil
+}
+
+// helper for expanding rules
+func expandRule(r matrixRule, exp command.Expansions) (matrixRule, error) {
+	newR := r
+	for _, md := range r.If {
+		newIf, err := expandMatrixDefinition(md, exp)
+		if err != nil {
+			return newR, fmt.Errorf("if: %v", err)
+		}
+		newR.If = append(newR.If, newIf)
+	}
+	for _, t := range r.Then.AddTasks {
+		newTask, err := expandParserBVTask(t, exp)
+		if err != nil {
+			return newR, fmt.Errorf("add_tasks: %v", err)
+		}
+		newR.Then.AddTasks = append(newR.Then.AddTasks, newTask)
+	}
+	if len(r.Then.RemoveTasks) > 0 {
+		var err error
+		newR.Then.RemoveTasks, err = expandStrings(r.Then.RemoveTasks, exp)
+		if err != nil {
+			return newR, fmt.Errorf("remove_tasks: %v", err)
+		}
+	}
+	// r.Then.Set will be taken care of when mergeAxisValue is called
+	// so we don't have to do it in this function
+	return newR, nil
 }
