@@ -39,17 +39,24 @@ buildvariants:
       os: "*"
       configuration: "*"
   tasks:
-  - name: "compile"
-    run_on: ${build_distro}
-    depends_on:
-    - name: "pre-task"
-      variant: "analysis"
   - name: "!.special"
     depends_on:
     - name: "compile"
-      variant: # only run compile once per OS -- all configs will depend on it
+      variant: 
         os: ${os}
-        configuration: "standalone" #FIXME this is broken
+        configuration: "standalone"
+  rules:
+  # only run compile once per OS -- all configs will depend on it
+  - if:
+      os: "*"
+      configuration: "standalone"
+    then:
+      add_tasks:
+        name: "compile"
+        run_on: ${build_distro}
+        depends_on:
+        - name: "pre-task"
+          variant: "analysis"
 
 tasks:
 - name: "compile"
