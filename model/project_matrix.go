@@ -533,11 +533,16 @@ func expandTaskSelector(ts taskSelector, exp command.Expansions) (taskSelector, 
 					return newTS, fmt.Errorf("expanding variant: %v", err)
 				}
 			}
-			v.matrixSelector = newMS
+			newTS.Variant = &variantSelector{
+				matrixSelector: newMS,
+			}
 		} else {
-			v.stringSelector, err = exp.ExpandString(v.stringSelector)
+			selector, err := exp.ExpandString(v.stringSelector)
 			if err != nil {
 				return newTS, fmt.Errorf("expanding variant: %v", err)
+			}
+			newTS.Variant = &variantSelector{
+				stringSelector: selector,
 			}
 		}
 	}
