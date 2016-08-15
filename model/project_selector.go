@@ -339,7 +339,7 @@ func (v *variantSelectorEvaluator) evalSelector(vs *variantSelector) ([]string, 
 		return nil, fmt.Errorf("empty selector")
 	}
 	if vs.matrixSelector != nil {
-		evaluatedSelector, errs := vs.matrixSelector.evalutedCopy(v.axisEval)
+		evaluatedSelector, errs := vs.matrixSelector.evaluatedCopy(v.axisEval)
 		if len(errs) > 0 {
 			return nil, fmt.Errorf(
 				"errors while evaluating variant selector %v: %v", vs.matrixSelector, errs)

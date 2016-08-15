@@ -17,9 +17,9 @@ import (
 // On a high level, matrix variant construction takes the following steps:
 //   1. Matrix definitions are read as part of a project's `buildvariants` field
 //  and separated into a separate slice.
-//   2. An tag selector evaluator is constructed for evaluating axis selectors
+//   2. A tag selector evaluator is constructed for evaluating axis selectors
 //   3. The matrix and axis definitions are passed to buildMatrixVariants, which
-//  all combination of matrix cells and removes excluded ones.
+//  creates all combinations of matrix cells and removes excluded ones.
 //   4. During the generation of a single cell, we merge all axis values for the cell
 //  together to create a fully filled-in variant. Matrix rules concerning non-task settings
 //  are evaluated as well. Rules `add_tasks` and `remove_tasks` are stored in the variant
@@ -153,7 +153,7 @@ func (mdef matrixDefinition) allCells() []matrixValue {
 }
 
 // evaluatedCopy returns a copy of the definition with its tag selectors evaluated.
-func (mdef matrixDefinition) evalutedCopy(ase *axisSelectorEvaluator) (matrixDefinition, []error) {
+func (mdef matrixDefinition) evaluatedCopy(ase *axisSelectorEvaluator) (matrixDefinition, []error) {
 	var errs []error
 	cpy := matrixDefinition{}
 	for axis, vals := range mdef {
@@ -218,7 +218,7 @@ func (mds matrixDefinitions) evaluatedCopies(ase *axisSelectorEvaluator) (matrix
 	var out matrixDefinitions
 	var errs []error
 	for _, md := range mds {
-		evaluated, evalErrs := md.evalutedCopy(ase)
+		evaluated, evalErrs := md.evaluatedCopy(ase)
 		errs = append(errs, evalErrs...)
 		out = append(out, evaluated)
 	}
@@ -246,7 +246,7 @@ func evaluateAxisTags(ase *axisSelectorEvaluator, axis string, selectors []strin
 	return out, errs
 }
 
-// buildMatrixVariant takes in a list of axis definitions, an aixsSelector, and a slice of
+// buildMatrixVariants takes in a list of axis definitions, an axisSelectorEvaluator, and a slice of
 // matrix definitions. It returns a slice of parserBuildVariants constructed according to
 // our matrix specification.
 func buildMatrixVariants(axes []matrixAxis, ase *axisSelectorEvaluator, matrices []matrix) (
@@ -256,7 +256,7 @@ func buildMatrixVariants(axes []matrixAxis, ase *axisSelectorEvaluator, matrices
 	matrixVariants := []parserBV{}
 	for i, m := range matrices {
 		// for each axis value, iterate through possible inputs
-		evaluatedSpec, evalErrs := m.Spec.evalutedCopy(ase)
+		evaluatedSpec, evalErrs := m.Spec.evaluatedCopy(ase)
 		if len(evalErrs) > 0 {
 			errs = append(errs, evalErrs...)
 			continue
@@ -290,7 +290,9 @@ func buildMatrixVariants(axes []matrixAxis, ase *axisSelectorEvaluator, matrices
 }
 
 // buildMatrixVariant does the heavy lifting of building a matrix variant based on axis information.
-// We do this by iterating over each axis and adding in merging the axis value's settings with
+// We do this by iterating over all axes and merging the axis value's settings when applicable. Expansions
+// are evaluated during this process. Rules are parsed and added to the resulting parserBV for later
+// excecution.
 func buildMatrixVariant(axes []matrixAxis, mv matrixValue, m *matrix, ase *axisSelectorEvaluator) (*parserBV, error) {
 	v := parserBV{
 		matrixVal:  mv,
@@ -301,7 +303,7 @@ func buildMatrixVariant(axes []matrixAxis, mv matrixValue, m *matrix, ase *axisS
 		RunOn:      m.RunOn,
 		Expansions: *command.NewExpansions(mv),
 	}
-	// we declare a separate expansion map to for evaluating the display name
+	// we declare a separate expansion map for evaluating the display name
 	displayNameExp := command.Expansions{}
 
 	// build up the variant id while iterating through axis values
@@ -312,7 +314,7 @@ func buildMatrixVariant(axes []matrixAxis, mv matrixValue, m *matrix, ase *axisS
 	// track how many axes we cover, so we know the value is only using real axes
 	usedAxes := 0
 
-	// we must iterate over axis to have a consistent ordering for our axis priority
+	// we must iterate over axis definitions to have a consistent ordering for our axis priority
 	for _, a := range axes {
 		// skip any axes that aren't used in the variant's definition
 		if _, ok := mv[a.Id]; !ok {

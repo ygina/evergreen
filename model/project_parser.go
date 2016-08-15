@@ -137,7 +137,8 @@ type taskSelector struct {
 // TaskSelectors is a helper type for parsing arrays of TaskSelector.
 type taskSelectors []taskSelector
 
-// VariantSelector handles the selection
+// VariantSelector handles the selection of a variant, either by a id/tag selector
+// or by matching against matrix axis values.
 type variantSelector struct {
 	stringSelector string
 	matrixSelector matrixDefinition
@@ -383,8 +384,7 @@ func createIntermediateProject(yml []byte) (*parserProject, []error) {
 	if err != nil {
 		return nil, []error{err}
 	}
-	// before returning, filter the matrix definitions into their own slice
-	p.BuildVariants, p.matrices = sieveMatrixVariants(p.BuildVariants)
+
 	return p, nil
 }
 
@@ -417,10 +417,11 @@ func translateProject(pp *parserProject) (*Project, []error) {
 	}
 	tse := NewParserTaskSelectorEvaluator(pp.Tasks)
 	ase := NewAxisSelectorEvaluator(pp.Axes)
+	regularBVs, matrices := sieveMatrixVariants(pp.BuildVariants)
 	var evalErrs, errs []error
-	matrixVariants, errs := buildMatrixVariants(pp.Axes, ase, pp.matrices)
+	matrixVariants, errs := buildMatrixVariants(pp.Axes, ase, matrices)
 	evalErrs = append(evalErrs, errs...)
-	pp.BuildVariants = append(pp.BuildVariants, matrixVariants...)
+	pp.BuildVariants = append(regularBVs, matrixVariants...)
 	vse := NewVariantSelectorEvaluator(pp.BuildVariants, ase)
 	proj.Tasks, errs = evaluateTasks(tse, vse, pp.Tasks)
 	evalErrs = append(evalErrs, errs...)

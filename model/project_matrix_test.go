@@ -65,8 +65,8 @@ buildvariants:
 `
 			p, errs := createIntermediateProject([]byte(simple))
 			So(errs, ShouldBeNil)
-			So(len(p.matrices), ShouldEqual, 2)
-			m1 := p.matrices[0]
+			So(len(p.BuildVariants), ShouldEqual, 2)
+			m1 := *p.BuildVariants[0].matrix
 			So(m1, ShouldResemble, matrix{
 				Id: "test",
 				Spec: matrixDefinition{
@@ -77,7 +77,7 @@ buildvariants:
 					{"os": []string{"ubuntu"}, "bits": []string{"32"}},
 				},
 			})
-			m2 := p.matrices[1]
+			m2 := *p.BuildVariants[1].matrix
 			So(m2, ShouldResemble, matrix{
 				Id: "test2",
 				Spec: matrixDefinition{
@@ -96,12 +96,11 @@ buildvariants:
 `
 			p, errs := createIntermediateProject([]byte(simple))
 			So(errs, ShouldBeNil)
-			So(len(p.matrices), ShouldEqual, 1)
-			m1 := p.matrices[0]
+			So(len(p.BuildVariants), ShouldEqual, 2)
+			m1 := *p.BuildVariants[0].matrix
 			So(m1.Id, ShouldEqual, "test")
-			So(len(p.BuildVariants), ShouldEqual, 1)
-			So(p.BuildVariants[0].Name, ShouldEqual, "single_variant")
-			So(p.BuildVariants[0].Tasks, ShouldResemble, parserBVTasks{parserBVTask{Name: "*"}})
+			So(p.BuildVariants[1].Name, ShouldEqual, "single_variant")
+			So(p.BuildVariants[1].Tasks, ShouldResemble, parserBVTasks{parserBVTask{Name: "*"}})
 		})
 	})
 }
