@@ -76,6 +76,7 @@ func TestPythonMatrixIntegration(t *testing.T) {
 					tasks := taskNames(v)
 					So(len(tasks), ShouldEqual, 7)
 					So(tasks, ShouldNotContain, "ldap_auth")
+					So(v.DisplayName, ShouldEqual, "Windows 95 Python 3.0 (without C extensions)")
 				})
 				Convey("so that the linux/python3/c variant has a lint task", func() {
 					v := findMatrixVariant(p.BuildVariants, matrixValue{
@@ -88,8 +89,8 @@ func TestPythonMatrixIntegration(t *testing.T) {
 					So(len(tasks), ShouldEqual, 9)
 					So(tasks, ShouldContain, "ldap_auth")
 					So(tasks, ShouldContain, "lint")
+					So(v.DisplayName, ShouldEqual, "Linux Python 3.0 (with C extensions)")
 				})
-				//TODO check all these display names
 			})
 		})
 	})
