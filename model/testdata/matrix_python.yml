@@ -62,15 +62,16 @@ buildvariants:
     os: "*"
   display_name: "${os} Python ${python} (${c-extensions})" 
   tasks : "!.static"
+  rules:
   # let's say we have an LDAP auth task that requires a C library to work on Windows,
   # here we can remove that task for all windows variants without c extensions
-  rules:
   - if:
       os: windows
       c-extensions: "without-c"
       python: "*"
     then:
       remove_tasks: ".ldap"
+  # let's only run "lint" on one of our variants
   - if:
       os: linux
       c-extensions: "with-c"
