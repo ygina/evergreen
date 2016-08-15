@@ -48,15 +48,24 @@ class Root extends React.Component{
 
     // Handle state for a collapsed view, as well as shortened header commit messages
     this.state = {collapsed: false,
-                  shortenCommitMessage: true};
+                  shortenCommitMessage: true,
+				  buildVariantFilter: '',
+				  taskFilter: ''};
 
     this.handleCollapseChange = this.handleCollapseChange.bind(this);
     this.handleHeaderLinkClick = this.handleHeaderLinkClick.bind(this);
+    this.handleBuildVariantFilter = this.handleBuildVariantFilter.bind(this);
+    this.handleTaskFilter = this.handleTaskFilter.bind(this);
   }
   handleCollapseChange(collapsed) {
     this.setState({collapsed: collapsed});
   }
-
+  handleBuildVariantFilter(filter) {
+    this.setState({buildVariantFilter: filter});
+  }
+  handleTaskFilter(filter) {
+    this.setState({taskFilter: filter});
+  }
   handleHeaderLinkClick(shortenMessage) {
     this.setState({shortenCommitMessage: !shortenMessage});
   }
@@ -68,6 +77,8 @@ class Root extends React.Component{
           onCheck={this.handleCollapseChange} 
           nextURL={this.nextURL}
           prevURL={this.prevURL} 
+		  buildVariantFilter={this.buildVariantFilter}
+		  taskFilter={this.taskFilter}
         /> 
         <Headers 
           shortenCommitMessage={this.state.shortenCommitMessage} 
