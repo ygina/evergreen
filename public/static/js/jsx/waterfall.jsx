@@ -1,7 +1,6 @@
-  /*
+ /*
   ReactJS code for the Waterfall page. Grid calls the Variant class for each distro, and the Variant class renders each build variant for every version that exists. In each build variant we iterate through all the tasks and render them as well. The row of headers is just a placeholder at the moment.
-  */
-
+ */
 
 
 // Returns string from datetime object in "5/7/96 1:15 AM" format
@@ -77,8 +76,8 @@ class Root extends React.Component{
           onCheck={this.handleCollapseChange} 
           nextURL={this.nextURL}
           prevURL={this.prevURL} 
-		  buildVariantFilter={this.buildVariantFilter}
-		  taskFilter={this.taskFilter}
+		  buildVariantFilterFunc={this.handleBuildVariantFilter}
+		  taskFilterFunc={this.handleTaskFilter}
         /> 
         <Headers 
           shortenCommitMessage={this.state.shortenCommitMessage} 
@@ -98,10 +97,12 @@ class Root extends React.Component{
 /*** START OF WATERFALL TOOLBAR ***/
 
 
-function Toolbar ({collapsed, onCheck, nextURL, prevURL}) {
+function Toolbar ({collapsed, onCheck, nextURL, prevURL, buildVariantFilterFunc, taskFilterFunc}) {
   return (
     <div className="waterfall-toolbar"> 
       <span className="waterfall-text"> Waterfall </span>
+	  <FilterBox filterFunction={buildVariantFilterFunc} placeholder={"Filter variant"}/>
+	  <FilterBox filterFunction={taskFilterFunc} placeholder={"Filter task"}/>
       <CollapseButton collapsed={collapsed} onCheck={onCheck} />
       <PageButtons nextURL={nextURL} prevURL={prevURL} />
     </div>
@@ -123,6 +124,19 @@ function PageButton ({pageURL, displayText, disabled}) {
   return (
     <Button href={pageURL} disabled={disabled} bsSize="small">{displayText}</Button>
   );
+}
+
+class FilterBox extends React.Component {
+  constructor(props){
+	super(props);
+	this.applyFilter = this.applyFilter.bind(this);
+  }
+  applyFilter() {
+	this.props.filterFunction(this.refs.searchInput.value)
+  }
+  render() {
+	return <input type="text" ref="searchInput" placeholder={this.props.placeholder} value={this.props.currentFilter} onChange={this.applyFilter}/>
+  }
 }
 
 class CollapseButton extends React.Component{
@@ -286,13 +300,19 @@ function RolledUpVersionSummary ({version, i}) {
 /*** START OF WATERFALL GRID ***/
 
 // The main class that binds to the root div. This contains all the distros, builds, and tasks
-function Grid ({data, project, collapsed}) {
+function Grid ({data, project, collapsed, buildVariantFilter, taskFilter}) {
   return (
     <div className="waterfall-grid">
       {
-        data.rows.map(function(row){
+		console.log(data.rows)
+		/*
+        data.rows.filter(function(row){
+		  return row.build_variant.display_name.toLowerCase().indexOf(buildVariantFilter.toLowerCase()) != -1;
+		})
+		data.rows.map(function(row){
           return <Variant row={row} project={project} collapsed={collapsed} versions={data.versions} />;
         })
+		*/
       }
     </div> 
   )

@@ -1,7 +1,6 @@
-  /*
+ /*
   ReactJS code for the Waterfall page. Grid calls the Variant class for each distro, and the Variant class renders each build variant for every version that exists. In each build variant we iterate through all the tasks and render them as well. The row of headers is just a placeholder at the moment.
-  */
-
+ */
 
 
 // Returns string from datetime object in "5/7/96 1:15 AM" format
@@ -48,15 +47,24 @@ class Root extends React.Component{
 
     // Handle state for a collapsed view, as well as shortened header commit messages
     this.state = {collapsed: false,
-                  shortenCommitMessage: true};
+                  shortenCommitMessage: true,
+				  buildVariantFilter: '',
+				  taskFilter: ''};
 
     this.handleCollapseChange = this.handleCollapseChange.bind(this);
     this.handleHeaderLinkClick = this.handleHeaderLinkClick.bind(this);
+    this.handleBuildVariantFilter = this.handleBuildVariantFilter.bind(this);
+    this.handleTaskFilter = this.handleTaskFilter.bind(this);
   }
   handleCollapseChange(collapsed) {
     this.setState({collapsed: collapsed});
   }
-
+  handleBuildVariantFilter(filter) {
+    this.setState({buildVariantFilter: filter});
+  }
+  handleTaskFilter(filter) {
+    this.setState({taskFilter: filter});
+  }
   handleHeaderLinkClick(shortenMessage) {
     this.setState({shortenCommitMessage: !shortenMessage});
   }
@@ -67,7 +75,9 @@ class Root extends React.Component{
           collapsed: this.state.collapsed, 
           onCheck: this.handleCollapseChange, 
           nextURL: this.nextURL, 
-          prevURL: this.prevURL}
+          prevURL: this.prevURL, 
+		  buildVariantFilterFunc: this.handleBuildVariantFilter, 
+		  taskFilterFunc: this.handleTaskFilter}
         ), 
         React.createElement(Headers, {
           shortenCommitMessage: this.state.shortenCommitMessage, 
@@ -87,10 +97,12 @@ class Root extends React.Component{
 /*** START OF WATERFALL TOOLBAR ***/
 
 
-function Toolbar ({collapsed, onCheck, nextURL, prevURL}) {
+function Toolbar ({collapsed, onCheck, nextURL, prevURL, buildVariantFilterFunc, taskFilterFunc}) {
   return (
     React.createElement("div", {className: "waterfall-toolbar"}, 
       React.createElement("span", {className: "waterfall-text"}, " Waterfall "), 
+	  React.createElement(FilterBox, {filterFunction: buildVariantFilterFunc, placeholder: "Filter variant"}), 
+	  React.createElement(FilterBox, {filterFunction: taskFilterFunc, placeholder: "Filter task"}), 
       React.createElement(CollapseButton, {collapsed: collapsed, onCheck: onCheck}), 
       React.createElement(PageButtons, {nextURL: nextURL, prevURL: prevURL})
     )
@@ -112,6 +124,19 @@ function PageButton ({pageURL, displayText, disabled}) {
   return (
     React.createElement(Button, {href: pageURL, disabled: disabled, bsSize: "small"}, displayText)
   );
+}
+
+class FilterBox extends React.Component {
+  constructor(props){
+	super(props);
+	this.applyFilter = this.applyFilter.bind(this);
+  }
+  applyFilter() {
+	this.props.filterFunction(this.refs.searchInput.value)
+  }
+  render() {
+	return React.createElement("input", {type: "text", ref: "searchInput", placeholder: this.props.placeholder, value: this.props.currentFilter, onChange: this.applyFilter})
+  }
 }
 
 class CollapseButton extends React.Component{
@@ -275,13 +300,19 @@ function RolledUpVersionSummary ({version, i}) {
 /*** START OF WATERFALL GRID ***/
 
 // The main class that binds to the root div. This contains all the distros, builds, and tasks
-function Grid ({data, project, collapsed}) {
+function Grid ({data, project, collapsed, buildVariantFilter, taskFilter}) {
   return (
     React.createElement("div", {className: "waterfall-grid"}, 
       
-        data.rows.map(function(row){
-          return React.createElement(Variant, {row: row, project: project, collapsed: collapsed, versions: data.versions});
+		console.log(data.rows)
+		/*
+        data.rows.filter(function(row){
+		  return row.build_variant.display_name.toLowerCase().indexOf(buildVariantFilter.toLowerCase()) != -1;
+		})
+		data.rows.map(function(row){
+          return <Variant row={row} project={project} collapsed={collapsed} versions={data.versions} />;
         })
+		*/
       
     ) 
   )
