@@ -48,8 +48,8 @@ class Root extends React.Component{
     // Handle state for a collapsed view, as well as shortened header commit messages
     this.state = {collapsed: false,
                   shortenCommitMessage: true,
-				  buildVariantFilter: '',
-				  taskFilter: ''};
+                  buildVariantFilter: '',
+                  taskFilter: ''};
 
     this.handleCollapseChange = this.handleCollapseChange.bind(this);
     this.handleHeaderLinkClick = this.handleHeaderLinkClick.bind(this);
@@ -76,8 +76,8 @@ class Root extends React.Component{
           onCheck: this.handleCollapseChange, 
           nextURL: this.nextURL, 
           prevURL: this.prevURL, 
-		  buildVariantFilterFunc: this.handleBuildVariantFilter, 
-		  taskFilterFunc: this.handleTaskFilter}
+          buildVariantFilterFunc: this.handleBuildVariantFilter, 
+          taskFilterFunc: this.handleTaskFilter}
         ), 
         React.createElement(Headers, {
           shortenCommitMessage: this.state.shortenCommitMessage, 
@@ -87,7 +87,9 @@ class Root extends React.Component{
         React.createElement(Grid, {
           data: this.props.data, 
           collapsed: this.state.collapsed, 
-          project: this.props.project}
+          project: this.props.project, 
+          buildVariantFilter: this.state.buildVariantFilter, 
+          taskFilter: this.state.taskFilter}
         )
       )
     )
@@ -101,8 +103,8 @@ function Toolbar ({collapsed, onCheck, nextURL, prevURL, buildVariantFilterFunc,
   return (
     React.createElement("div", {className: "waterfall-toolbar"}, 
       React.createElement("span", {className: "waterfall-text"}, " Waterfall "), 
-	  React.createElement(FilterBox, {filterFunction: buildVariantFilterFunc, placeholder: "Filter variant"}), 
-	  React.createElement(FilterBox, {filterFunction: taskFilterFunc, placeholder: "Filter task"}), 
+      React.createElement(FilterBox, {filterFunction: buildVariantFilterFunc, placeholder: "Filter variant", disabled: false}), 
+      React.createElement(FilterBox, {filterFunction: taskFilterFunc, placeholder: "Filter task", disabled: collapsed}), 
       React.createElement(CollapseButton, {collapsed: collapsed, onCheck: onCheck}), 
       React.createElement(PageButtons, {nextURL: nextURL, prevURL: prevURL})
     )
@@ -128,14 +130,14 @@ function PageButton ({pageURL, displayText, disabled}) {
 
 class FilterBox extends React.Component {
   constructor(props){
-	super(props);
-	this.applyFilter = this.applyFilter.bind(this);
+    super(props);
+    this.applyFilter = this.applyFilter.bind(this);
   }
   applyFilter() {
-	this.props.filterFunction(this.refs.searchInput.value)
+    this.props.filterFunction(this.refs.searchInput.value)
   }
   render() {
-	return React.createElement("input", {type: "text", ref: "searchInput", placeholder: this.props.placeholder, value: this.props.currentFilter, onChange: this.applyFilter})
+    return React.createElement("input", {type: "text", ref: "searchInput", placeholder: this.props.placeholder, value: this.props.currentFilter, onChange: this.applyFilter, disabled: this.props.disabled})
   }
 }
 
@@ -304,15 +306,12 @@ function Grid ({data, project, collapsed, buildVariantFilter, taskFilter}) {
   return (
     React.createElement("div", {className: "waterfall-grid"}, 
       
-		console.log(data.rows)
-		/*
         data.rows.filter(function(row){
-		  return row.build_variant.display_name.toLowerCase().indexOf(buildVariantFilter.toLowerCase()) != -1;
-		})
-		data.rows.map(function(row){
-          return <Variant row={row} project={project} collapsed={collapsed} versions={data.versions} />;
+          return row.build_variant.display_name.toLowerCase().indexOf(buildVariantFilter.toLowerCase()) != -1;
         })
-		*/
+        .map(function(row){
+          return React.createElement(Variant, {row: row, project: project, collapsed: collapsed, versions: data.versions, taskFilter: taskFilter});
+        })
       
     ) 
   )
@@ -320,7 +319,7 @@ function Grid ({data, project, collapsed, buildVariantFilter, taskFilter}) {
 
 // The class for each "row" of the waterfall page. Includes the build variant link, as well as the five columns
 // of versions.
-function Variant({row, versions, project, collapsed}) {
+function Variant({row, versions, project, collapsed, taskFilter}) {
       return (
       React.createElement("div", {className: "row variant-row"}, 
         React.createElement("div", {className: "col-xs-2 build-variant-name distro-col"}, 
@@ -332,7 +331,7 @@ function Variant({row, versions, project, collapsed}) {
           React.createElement("div", {className: "row build-cols"}, 
             
               row.versions.map((versionId,i) => {
-                return React.createElement(Build, {key: versionId, build: row.builds[versionId], version: versions[versionId], collapsed: collapsed})
+                return React.createElement(Build, {key: versionId, build: row.builds[versionId], version: versions[versionId], collapsed: collapsed, taskFilter: taskFilter})
               })
             
           )
@@ -344,7 +343,7 @@ function Variant({row, versions, project, collapsed}) {
 
 // Each Build class is one group of tasks for an version + build variant intersection
 // We case on whether or not a build is active or not, and return either an ActiveBuild or InactiveBuild respectively
-function Build({build, collapsed, version}){
+function Build({build, collapsed, version, taskFilter}){
   // inactive build
   if (version.rolled_up) {
     return React.createElement(InactiveBuild, {className: "build"});
@@ -362,22 +361,27 @@ function Build({build, collapsed, version}){
   // uncollapsed active build
   return (
     React.createElement("div", {className: "build"}, 
-      React.createElement(ActiveBuild, {build: build})
+      React.createElement(ActiveBuild, {build: build, taskFilter: taskFilter})
     )
   )
 }
 
 // At least one task in the version is non-inactive, so we display all build tasks with their appropiate colors signifying their status
-function ActiveBuild({build, validTasks}){  
+function ActiveBuild({build, validTasks, taskFilter}){  
   var tasks = build.tasks;
-
+  
   // If our filter is defined, we filter our list of tasks to only display a given status 
   if (validTasks != null) {
     tasks = _.filter(tasks, function(task) { 
       return _.contains(validTasks, task.status);
     });
   }
-
+  if (taskFilter != null){
+    tasks = _.filter(tasks, function(task){
+      return task.display_name.toLowerCase().indexOf(taskFilter.toLowerCase()) != -1;
+    });
+  }
+  
   return (
     React.createElement("div", {className: "active-build"}, 
       
