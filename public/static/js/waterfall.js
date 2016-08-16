@@ -366,11 +366,18 @@ function InactiveBuild ({}){
 // A Task contains the information for a single task for a build, including the link to its page, and a tooltip
 function Task({task}) {
   var status = task.status;
+
   var tooltipContent = task.display_name + " - " + status;
+  var OverlayTrigger = ReactBootstrap.OverlayTrigger;
+  var Popover = ReactBootstrap.Popover;
+  var Tooltip = ReactBootstrap.Tooltip;
+  var tooltip = React.createElement(Tooltip, {id: "tooltip"}, tooltipContent)
 
   return (
-    React.createElement("div", {className: "waterfall-box"}, 
-      React.createElement("a", {href: "/task/" + task.id, className: "task-result " + status})
+    React.createElement(OverlayTrigger, {placement: "top", overlay: tooltip}, 
+	  React.createElement("div", {className: "waterfall-box"}, 
+		React.createElement("a", {href: "/task/" + task.id, className: "task-result " + status})
+	  )
     )
   )
 }
