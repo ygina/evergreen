@@ -2027,6 +2027,9 @@ a.task-summary:hover {
 a.task-summary.success {
   color: white;
 }
+a.task-summary.zero {
+  opacity: .15;
+}
 .inactive-header {
   text-align: center;
 }

@@ -41,10 +41,13 @@ class Root extends React.Component{
     }
 
     // Handle state for a collapsed view, as well as shortened header commit messages
-    this.state = {collapsed: false,
-                  shortenCommitMessage: true,
-                  buildVariantFilter: '',
-                  taskFilter: ''};
+    var collapsed = !!localStorage.getItem("collapsed");
+    this.state = {
+      collapsed: collapsed,
+      shortenCommitMessage: true,
+      buildVariantFilter: '',
+      taskFilter: ''
+    };
 
     this.handleCollapseChange = this.handleCollapseChange.bind(this);
     this.handleHeaderLinkClick = this.handleHeaderLinkClick.bind(this);
@@ -53,6 +56,7 @@ class Root extends React.Component{
 
   }
   handleCollapseChange(collapsed) {
+    localStorage.setItem("collapsed", collapsed);
     this.setState({collapsed: collapsed});
   }
   handleBuildVariantFilter(filter) {
@@ -465,9 +469,9 @@ function CollapsedBuild({build, activeTaskStatuses}){
     "failed"       : taskStats.failed,
   };
 
-  // Remove all task summaries that have 0 tasks
+  // Remove all task summaries that have 0 tasks TODO
   taskTypes = _.pick(taskTypes, function(count, status){
-    return count > 0 && !(_.contains(activeTaskStatuses, status))
+    return !(_.contains(activeTaskStatuses, status))
   });
   
   return (
@@ -489,9 +493,13 @@ function TaskSummary({status, count, build}){
   var Popover = ReactBootstrap.Popover;
   var Tooltip = ReactBootstrap.Tooltip;
   var tt = <Tooltip id="tooltip">{count} {status}</Tooltip>;
+  var classes = "task-summary " + status
+  if (count == 0) {
+    classes += " zero";
+  }
   return (
     <OverlayTrigger placement="top" overlay={tt} animation={false}>
-      <a href={id_link} className={"task-summary " + status} > 
+      <a href={id_link} className={classes}> 
         {count}
       </a>
     </OverlayTrigger>

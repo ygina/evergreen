@@ -2,7 +2,8 @@
 @tooltip-width: 150px;
 @tooltip-left: 0 - @tooltip-width / 2;
 @cell-height: 14px;
-@summary-height: @cell-height*2 + 1;
+@cell-padding: 1px;
+@summary-height: @cell-height*2 + @cell-padding;
 @build-padding: 8px;
 
 body {
@@ -96,8 +97,8 @@ body {
 
 .waterfall-box {
   float: left;
-  margin-right: 1px;
-  margin-bottom: 1px;
+  margin-right: @cell-padding;
+  margin-bottom: @cell-padding;
   height: @cell-height;
   width: @cell-height;
   &:hover {
@@ -112,8 +113,8 @@ body {
 a.task-summary {
   padding: 0 2px;
   display: inline-block;
-  margin-right: 1px;
-  margin-bottom: 1px;
+  margin-right: @cell-padding;
+  margin-bottom: @cell-padding;
   height: @summary-height;
   min-width: @summary-height;
   line-height: @summary-height;
@@ -127,6 +128,9 @@ a.task-summary {
   }
   &.success{
     color: white;
+  }
+  &.zero{
+    opacity: .15;
   }
 }
 
