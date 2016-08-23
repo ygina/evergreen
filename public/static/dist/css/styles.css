@@ -2021,14 +2021,14 @@ a.task-summary {
   text-align: center;
   text-decoration: none;
 }
-a.task-summary:hover {
-  opacity: .8;
-}
 a.task-summary.success {
   color: white;
 }
 a.task-summary.zero {
-  opacity: .15;
+  opacity: .2;
+}
+a.task-summary:hover {
+  opacity: .8;
 }
 .inactive-header {
   text-align: center;

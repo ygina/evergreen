@@ -41,7 +41,7 @@ class Root extends React.Component{
     }
 
     // Handle state for a collapsed view, as well as shortened header commit messages
-    var collapsed = !!localStorage.getItem("collapsed");
+    var collapsed = localStorage.getItem("collapsed") == "true";
     this.state = {
       collapsed: collapsed,
       shortenCommitMessage: true,
@@ -115,14 +115,14 @@ function Toolbar ({collapsed, onCheck, nextURL, prevURL, buildVariantFilterFunc,
   var Form = ReactBootstrap.Form;
   return (
     <div className="row">
-    <div className="col-xs-12">
-    <Form inline className="waterfall-toolbar pull-right"> 
-      <CollapseButton collapsed={collapsed} onCheck={onCheck} />
-      <FilterBox filterFunction={buildVariantFilterFunc} placeholder={"Filter variant"} disabled={false}/>
-      <FilterBox filterFunction={taskFilterFunc} placeholder={"Filter task"} disabled={collapsed}/>
-      <PageButtons nextURL={nextURL} prevURL={prevURL} />
-    </Form>
-    </div>
+      <div className="col-xs-12">
+        <Form inline className="waterfall-toolbar pull-right"> 
+          <CollapseButton collapsed={collapsed} onCheck={onCheck} />
+          <FilterBox filterFunction={buildVariantFilterFunc} placeholder={"Filter variant"} disabled={false}/>
+          <FilterBox filterFunction={taskFilterFunc} placeholder={"Filter task"} disabled={collapsed}/>
+          <PageButtons nextURL={nextURL} prevURL={prevURL} />
+        </Form>
+      </div>
     </div>
   )
 };
@@ -359,9 +359,9 @@ function Variant({row, versions, project, collapseInfo, taskFilter}) {
       return (
       <div className="row variant-row">
         <div className="col-xs-2 build-variants"> 
-        <a href={"/build_variant/" + project + "/" + row.build_variant.id}>
+          <a href={"/build_variant/" + project + "/" + row.build_variant.id}>
             {row.build_variant.display_name}
-          </a> 
+          </a>
         </div>
         <div className="col-xs-10"> 
           <div className="row build-cells">
@@ -469,9 +469,9 @@ function CollapsedBuild({build, activeTaskStatuses}){
     "failed"       : taskStats.failed,
   };
 
-  // Remove all task summaries that have 0 tasks TODO
+  // Remove all task summaries that have 0 tasks
   taskTypes = _.pick(taskTypes, function(count, status){
-    return !(_.contains(activeTaskStatuses, status))
+    return count > 0 && !(_.contains(activeTaskStatuses, status))
   });
   
   return (
@@ -494,12 +494,9 @@ function TaskSummary({status, count, build}){
   var Tooltip = ReactBootstrap.Tooltip;
   var tt = <Tooltip id="tooltip">{count} {status}</Tooltip>;
   var classes = "task-summary " + status
-  if (count == 0) {
-    classes += " zero";
-  }
   return (
     <OverlayTrigger placement="top" overlay={tt} animation={false}>
-      <a href={id_link} className={classes}> 
+      <a href={id_link} className={classes}>
         {count}
       </a>
     </OverlayTrigger>

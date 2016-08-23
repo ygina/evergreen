@@ -41,7 +41,7 @@ class Root extends React.Component{
     }
 
     // Handle state for a collapsed view, as well as shortened header commit messages
-    var collapsed = !!localStorage.getItem("collapsed");
+    var collapsed = localStorage.getItem("collapsed") == "true";
     this.state = {
       collapsed: collapsed,
       shortenCommitMessage: true,
@@ -115,14 +115,14 @@ function Toolbar ({collapsed, onCheck, nextURL, prevURL, buildVariantFilterFunc,
   var Form = ReactBootstrap.Form;
   return (
     React.createElement("div", {className: "row"}, 
-    React.createElement("div", {className: "col-xs-12"}, 
-    React.createElement(Form, {inline: true, className: "waterfall-toolbar pull-right"}, 
-      React.createElement(CollapseButton, {collapsed: collapsed, onCheck: onCheck}), 
-      React.createElement(FilterBox, {filterFunction: buildVariantFilterFunc, placeholder: "Filter variant", disabled: false}), 
-      React.createElement(FilterBox, {filterFunction: taskFilterFunc, placeholder: "Filter task", disabled: collapsed}), 
-      React.createElement(PageButtons, {nextURL: nextURL, prevURL: prevURL})
-    )
-    )
+      React.createElement("div", {className: "col-xs-12"}, 
+        React.createElement(Form, {inline: true, className: "waterfall-toolbar pull-right"}, 
+          React.createElement(CollapseButton, {collapsed: collapsed, onCheck: onCheck}), 
+          React.createElement(FilterBox, {filterFunction: buildVariantFilterFunc, placeholder: "Filter variant", disabled: false}), 
+          React.createElement(FilterBox, {filterFunction: taskFilterFunc, placeholder: "Filter task", disabled: collapsed}), 
+          React.createElement(PageButtons, {nextURL: nextURL, prevURL: prevURL})
+        )
+      )
     )
   )
 };
@@ -359,7 +359,7 @@ function Variant({row, versions, project, collapseInfo, taskFilter}) {
       return (
       React.createElement("div", {className: "row variant-row"}, 
         React.createElement("div", {className: "col-xs-2 build-variants"}, 
-        React.createElement("a", {href: "/build_variant/" + project + "/" + row.build_variant.id}, 
+          React.createElement("a", {href: "/build_variant/" + project + "/" + row.build_variant.id}, 
             row.build_variant.display_name
           )
         ), 
@@ -469,9 +469,9 @@ function CollapsedBuild({build, activeTaskStatuses}){
     "failed"       : taskStats.failed,
   };
 
-  // Remove all task summaries that have 0 tasks TODO
+  // Remove all task summaries that have 0 tasks
   taskTypes = _.pick(taskTypes, function(count, status){
-    return !(_.contains(activeTaskStatuses, status))
+    return count > 0 && !(_.contains(activeTaskStatuses, status))
   });
   
   return (
@@ -494,9 +494,6 @@ function TaskSummary({status, count, build}){
   var Tooltip = ReactBootstrap.Tooltip;
   var tt = React.createElement(Tooltip, {id: "tooltip"}, count, " ", status);
   var classes = "task-summary " + status
-  if (count == 0) {
-    classes += " zero";
-  }
   return (
     React.createElement(OverlayTrigger, {placement: "top", overlay: tt, animation: false}, 
       React.createElement("a", {href: id_link, className: classes}, 
