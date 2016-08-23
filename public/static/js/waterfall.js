@@ -421,7 +421,7 @@ function ActiveBuild({tasks, taskFilter}){
   }
 
   return (
-    React.createElement("span", {className: "active-build"}, 
+    React.createElement("div", {className: "active-build"}, 
       
         tasks.map(function(task){
           return React.createElement(Task, {task: task})
@@ -471,7 +471,7 @@ function CollapsedBuild({build, activeTaskStatuses}){
   });
   
   return (
-    React.createElement("div", null, 
+    React.createElement("div", {className: "collapsed-build"}, 
       
         _.map(taskTypes, function(count, status) {
           return React.createElement(TaskSummary, {status: status, count: count, build: build});
@@ -492,7 +492,7 @@ function TaskSummary({status, count, build}){
   return (
     React.createElement(OverlayTrigger, {placement: "top", overlay: tt, animation: false}, 
       React.createElement("a", {href: id_link, className: "task-summary " + status}, 
-        "+", count
+        count
       )
     )
   )

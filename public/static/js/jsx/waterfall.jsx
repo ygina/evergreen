@@ -421,13 +421,13 @@ function ActiveBuild({tasks, taskFilter}){
   }
 
   return (
-    <span className="active-build"> 
+    <div className="active-build"> 
       {
         tasks.map(function(task){
           return <Task task={task} />
         })
       }
-    </span>
+    </div>
   )
 }
 
@@ -471,7 +471,7 @@ function CollapsedBuild({build, activeTaskStatuses}){
   });
   
   return (
-    <div>
+    <div className="collapsed-build">
       {
         _.map(taskTypes, function(count, status) {
           return <TaskSummary status={status} count={count} build={build} />;
@@ -492,7 +492,7 @@ function TaskSummary({status, count, build}){
   return (
     <OverlayTrigger placement="top" overlay={tt} animation={false}>
       <a href={id_link} className={"task-summary " + status} > 
-        +{count}
+        {count}
       </a>
     </OverlayTrigger>
   )

@@ -2008,13 +2008,14 @@ body {
   text-align: center;
 }
 a.task-summary {
-  padding: 0 6px;
+  padding: 0 2px;
+  display: inline-block;
   margin-right: 1px;
   margin-bottom: 1px;
   height: 29px;
+  min-width: 29px;
   line-height: 29px;
-  float: left;
-  font-size: 17px;
+  font-size: 14.5px;
   color: #494747;
   font-weight: bold;
   text-align: center;
@@ -2061,6 +2062,9 @@ a.task-summary.success {
 }
 .waterfall-form-item {
   margin: 0 4px;
+}
+.collapsed-build {
+  display: inline-block;
 }
 .tasks-summary {
   display: table-cell;

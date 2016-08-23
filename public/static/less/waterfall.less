@@ -110,13 +110,14 @@ body {
 }
 
 a.task-summary {
-  padding: 0 6px;
+  padding: 0 2px;
+  display: inline-block;
   margin-right: 1px;
   margin-bottom: 1px;
   height: @summary-height;
+  min-width: @summary-height;
   line-height: @summary-height;
-  float: left;
-  font-size:  @summary-height - 12;
+  font-size: @summary-height*.5;
   color: @gray1;
   font-weight: bold;
   text-align: center;
@@ -171,7 +172,9 @@ a.task-summary {
   margin: 0 4px;
 }
 
-
+.collapsed-build{
+  display: inline-block;
+}
 
 .tasks-summary {
     display: table-cell;
