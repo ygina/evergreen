@@ -49,6 +49,6 @@ type Expansion struct {
 
 // GenerateName generates a unique instance name for a distro.
 func (d *Distro) GenerateName() string {
-	return "evg_" + d.Id + "_" + time.Now().Format(NameTimeFormat) +
-		fmt.Sprintf("_%v", rand.New(rand.NewSource(time.Now().UnixNano())).Int())
+	return "evg-" + d.Id + "-" + time.Now().Format(NameTimeFormat) +
+		fmt.Sprintf("-%v", rand.New(rand.NewSource(time.Now().UnixNano())).Int())
 }
